@@ -41,12 +41,21 @@ df_sales_order_detail <- conn %>%
   dbGetQuery(sql_select) %>%
   select(-rowguid, -ModifiedDate) 
 
+# Import Data from Production.Product
+# Keeping only the variables I plan to analyze
+sql_select <- "SELECT * FROM Production.Product"
+df_product<- conn %>% 
+  dbGetQuery(sql_select) %>%
+  select(ProductID:ProductNumber) %>%
+  rename(ProductName = Name)
+
 # Import Data from Sales.SalesTerritory
 # Remove rowguid and ModifiedDate
 sql_select <- "SELECT * FROM Sales.SalesTerritory"
 df_sales_territory <- conn %>% 
   dbGetQuery(sql_select) %>%
-  select(-rowguid, -ModifiedDate) 
+  select(-rowguid, -ModifiedDate) %>%
+  rename(TerritoryName = Name)
 
 # Join Tables ------------------------------------------------------------------
 
@@ -54,9 +63,15 @@ df_sales_territory <- conn %>%
 df_sales_orders <- df_sales_order_header %>%
   inner_join(df_sales_order_detail, by = "SalesOrderID")
 
-# Join df_sales_territory to df_sales_orders
+# Join df_product and df_sales_territory to df_sales_orders
 df_sales_all <- df_sales_orders %>%
+  left_join(df_product, by = "ProductID") %>%
   left_join(df_sales_territory, by = "TerritoryID")
+
+# Use semi_join() with an inline filter to limit the dataframe to sales in 
+# North America
+df_sales_all <- df_sales_all %>%
+  semi_join(df_sales_territory %>% filter(Group == "North America"))
 
 # Explore the Data -------------------------------------------------------------
 
@@ -64,6 +79,7 @@ df_sales_all <- df_sales_orders %>%
 
 glimpse(df_sales_order_header)
 glimpse(df_sales_order_detail)
+glimpse(df_product)
 glimpse(df_sales_territory)
 glimpse(df_sales_orders)
 glimpse(df_sales_all)
