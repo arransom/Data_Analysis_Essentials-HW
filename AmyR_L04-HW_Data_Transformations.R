@@ -57,6 +57,28 @@ df_sales_territory <- conn %>%
   select(-rowguid, -ModifiedDate) %>%
   rename(TerritoryName = Name)
 
+# Review Primary Key and Foreign Key prior to inner join -----------------------
+
+# Compare the overall row count and the distinct row count for 
+# df_sales_order_header to confirm that SalesOrderID is the primary key
+
+#df_sales_order_header
+df_sales_order_header %>% 
+  nrow()
+
+df_sales_order_header %>% 
+  distinct(SalesOrderID) %>% 
+  nrow()
+
+# Confirm that the number of distinct values in df_sales_order_detail for the 
+# foreign key (SalesOrderID) it to df_sales_order_header matches 
+# the total number of rows in df_sales_order_header, a sign of referential integrity
+
+df_sales_order_detail %>% 
+  distinct(SalesOrderID) %>% 
+  nrow()
+
+
 # Join Tables ------------------------------------------------------------------
 
 # Join the first two tables (df_sales_order_header and df_sales_order_detail)
@@ -70,16 +92,36 @@ df_sales_all <- df_sales_orders %>%
 
 # Use semi_join() with an inline filter to limit the dataframe to sales in 
 # North America
-df_sales_all <- df_sales_all %>%
+df_sales_north_america <- df_sales_all %>%
   semi_join(df_sales_territory %>% filter(Group == "North America"))
 
 # Explore the Data -------------------------------------------------------------
 
 # Glimpse results
 
-glimpse(df_sales_order_header)
-glimpse(df_sales_order_detail)
-glimpse(df_product)
-glimpse(df_sales_territory)
-glimpse(df_sales_orders)
-glimpse(df_sales_all)
+# glimpse(df_sales_order_header)
+# glimpse(df_sales_order_detail)
+# glimpse(df_product)
+# glimpse(df_sales_territory)
+# glimpse(df_sales_orders)
+# glimpse(df_sales_all)
+# glimpse(df_sales_north_america)
+
+
+# Data Transformations ---------------------------------------------------------
+
+# Look at the number of distinct values in variable CountryRegionCode,
+# primarily to look for data entry errors or alternate spellings/abbreviations 
+df_sales_north_america %>% 
+  distinct(CountryRegionCode)
+
+# Create new column, Country, with the names of the countries spelled out
+df_sales_north_america <- df_sales_north_america %>%
+  mutate(Country = str_replace_all(CountryRegionCode, c("US" = "UnitedStates", "CA"= "Canada")))
+
+
+
+
+# Disconnect from the database -------------------------------------------------
+
+dbDisconnect(conn)
