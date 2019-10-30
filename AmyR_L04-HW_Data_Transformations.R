@@ -108,6 +108,10 @@ df_sales_north_america <- df_sales_all %>%
 # glimpse(df_sales_north_america)
 
 
+# Disconnect from the database -------------------------------------------------
+
+dbDisconnect(conn)
+
 # Data Transformations ---------------------------------------------------------
 
 # Look at the number of distinct values in variable CountryRegionCode,
@@ -115,13 +119,22 @@ df_sales_north_america <- df_sales_all %>%
 df_sales_north_america %>% 
   distinct(CountryRegionCode)
 
-# Create new column, Country, with the names of the countries spelled out
+# Create new columns
 df_sales_north_america <- df_sales_north_america %>%
-  mutate(Country = str_replace_all(CountryRegionCode, c("US" = "UnitedStates", "CA"= "Canada")))
+  mutate(Country = str_replace_all(CountryRegionCode, c("US" = "UnitedStates", "CA"= "Canada")),
+         Year = year(OrderDate),
+         Month = month(OrderDate),
+         Year_Month = make_date(Year, Month))
 
+# Review the range of dates included in the data
 
+distinct(df_sales_north_america, Year_Month)
 
+# Limit the dataset to years for which you there is complete data:
+# 2012 and 2013; drop the variable used to review range of dates
 
-# Disconnect from the database -------------------------------------------------
+df_sales_2012_2013 <- df_sales_north_america %>%
+  filter(Year == 2012 | Year == 2013) %>%
+  select(-Year_Month)
 
-dbDisconnect(conn)
+glimpse(df_sales_2012_2013)
