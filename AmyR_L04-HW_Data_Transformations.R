@@ -138,3 +138,71 @@ df_sales_2012_2013 <- df_sales_north_america %>%
   select(-Year_Month)
 
 glimpse(df_sales_2012_2013)
+
+# Chart 1 - Number of Sales per Week:  United States and Canada ----------------
+
+# The following chart shows the number of sales per week in the United States 
+# and Canada from 2012 to 2013. Note that the number of sales per week follows 
+# a similar pattern in both countries, with a large spike for one week each 
+# month.  Also notice that the number of sales in "off" weeks shows a consistant 
+# increase beginning in July 2013.  This increase is clearly noticable for both 
+# countries. 
+
+df_sales_2012_2013 %>% 
+  group_by(Country) %>%     
+  mutate(Week = floor_date(OrderDate, "week")) %>%
+  count(Week, name = "WeeklySales") %>%
+ggplot(aes(Week, WeeklySales, color = Country)) +
+  geom_line() + 
+  labs(title = "Sales per Week: 2012 - 2013",
+       subtitle = "United States and Canada")
+
+
+# Chart 2: Number of Sales per Month: United States -------------------------------------
+
+# In the previous chart, it appeared that the increase in sales during "off" 
+# weeks was due to an overall increase in sales, rather than a shift in the 
+# timing of sales. To confirm this, I charted the sales per month for the same 
+# time period (2012-2013). I also limited the dataset to sales occuring in the 
+# United States.
+
+df_sales_2012_2013 %>% 
+  filter(Country == "UnitedStates") %>%     
+  mutate(Month = floor_date(OrderDate, "month")) %>%
+  count(Month, name = "MonthlySales") %>%
+ggplot(aes(Month, MonthlySales)) +
+  geom_col(fill = "turquoise3") + 
+  labs(title = "Sales per Month: 2012 - 2013",
+       subtitle = "United States")
+
+
+# Chart 3 - Number and Value of Sales Per Month: United States -----------------
+
+# Next, I needed to confirm that the value of sales per month had increased 
+# along with the number of sales per month. Another possibility is that 
+# companies are ordering the same amount of goods, but placing more (and more 
+# frequent) orders.
+
+df_sales_2012_2013 %>% 
+  filter(Country == "UnitedStates") %>%     
+  mutate(Month = floor_date(OrderDate, "month")) %>%
+  group_by(Month) %>%
+  summarize(MonthlySales = n(), MonthlySalesValue = sum(LineTotal)) %>%
+  mutate(MonthlySalesValueThousands = MonthlySalesValue/1000) %>%
+ggplot() +
+  geom_col(aes(Month, MonthlySales), fill = "turquoise3") +
+  geom_line(aes(Month, MonthlySalesValueThousands))
+  labs(title = "Number and Value of Sales per Month: 2012 - 2013",
+     subtitle = "United States")
+
+# Analysis and Conclusions -----------------------------------------------------
+
+# This chart shows that the value of sales went up along with the total number 
+# of sales per month in the United States. However, this does not necessarily 
+# mean that the company's profits increased during that time. For instance, 
+# production costs may have increased, the specific products sold may have 
+# changed (for instance, from products with a higher profit-margin to those with
+# a lower profit-margin), or overhead costs may have increased. One possibility:
+# Perhaps the company hired an additional sales person to focus on increasing 
+# sales during "off" weeks. Clearly sales have increased during those periods - 
+# but have they increased enough to offset the their employment costs?
