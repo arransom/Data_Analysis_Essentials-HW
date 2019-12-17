@@ -108,8 +108,15 @@ df_hurricane <- storms %>%
 # collapse the date & time variables into a single column
 df_hurricane <- df_hurricane %>% 
   mutate(obs_date = str_c(month, "-", day, "-", year),
+         # workaround: convert the hour variable to string type and join to 
+         # ":00" so that lubridate will recognize as a time
          obs_time = str_c(as.character(hour), ":00"),
-         obs_datetime = lubridate::mdy_hm(str_c(obs_date, "-", obs_time))) %>%
+         obs_datetime = lubridate::mdy_hm(str_c(obs_date, "-", obs_time)),
+         # convert max_cat into an integer variable, subtracting 2
+         # so that the integer value matches the official category rather than
+         # its ordinal position
+         category = as.integer(category),
+         category = category - 2) %>%
   select(name, obs_datetime, year, month, lat, long, category)
 
 
@@ -123,20 +130,38 @@ df_hurricane_summary <- df_hurricane %>%
   group_by(year, name) %>%
   summarize(start = min(obs_datetime), end = max(obs_datetime),
             n_most_lat = max(lat), s_most_lat = min(lat), 
-            max_cat = max(category)) %>%
+            max_cat = max(category),
+            min_cat = min(category)) %>%
   mutate(length = (end - start)/lubridate::ddays(1),
          start_mo = lubridate::month(start, label = TRUE),
          end_mo = lubridate::month(end, label = TRUE))
-
+         
 # explore the summary table for df_hurricane_summary
 df_hurricane_summary %>% 
+  arrange(max_cat) %>%
   glimpse() %>%
   head(10)
 
-tail(df_hurricane_summary, 10)
+df_hurricane_summary %>% 
+  arrange(max_cat) %>%
+  tail(10)
+
+df_hurricane_summary %>% 
+  arrange(min_cat) %>%
+  glimpse() %>%
+  head(10)
+
+# Use walk() to iterate over the summary dataset and create visualizations------
+
+# define x and y axis columns 
+
+x_col <- "year"
+
+y_cols <- c("n_most_lat", "s_most_lat", "length", "max_cat", "min_cat", 
+            "start_mo", "end_mo")
 
 
-df_hurricane_summary %>% ggplot(mapping = aes(x = year, y = max_cat)) +
-  geom_jitter(alpha = 0.5, color = "blue") + 
-  geom_smooth(method = "lm", se = FALSE, color = "purple") #+
-#labs(param_title, subtitle = param_subtitle) 
+# Create a functional call to iterate over the objects, calling gg_explore with 
+# df_hurricane_summary 
+y_cols %>% walk(gg_explore, data = df_hurricane_summary, x_col = x_col)
+
