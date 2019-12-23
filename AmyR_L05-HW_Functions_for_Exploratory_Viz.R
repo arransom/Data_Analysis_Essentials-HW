@@ -165,3 +165,28 @@ y_cols <- c("n_most_lat", "s_most_lat", "length", "max_cat", "min_cat",
 # df_hurricane_summary 
 y_cols %>% walk(gg_explore, data = df_hurricane_summary, x_col = x_col)
 
+
+# Chart 1 - Length (in days) of Hurricanes, by Year ----------------------------
+
+df_hurricane_summary %>% gg_explore("year", "length")
+
+# This linear model shows the mean length (in days) of hurricanes increasing 
+# over time. This observation is limited to the length of time that a given 
+# weather event is classified as a hurricane - it does not account for the 
+# length of time that the same weather event is observable as a tropical 
+# depression or tropical storm.
+
+
+# Chart 2 - Highest Category Reached of Hurricanes, by Year --------------------
+
+df_hurricane_summary %>% ggplot(mapping = aes(x = year, y = max_cat)) +
+  geom_jitter(alpha = 0.5, color = "blue") + 
+  geom_smooth(method = "lm", se = FALSE, color = "purple") +
+  labs(title = "Hurricanes: Highest Category Reached, by Year of Occurance",
+       subtitle = "1975 - 2015")
+
+# This scatterplot shows the higest category at which each hurricane was 
+# observed. Note that I converted "category" from an ordinal to an integer 
+# variable for the purpose of this analysis. Specifically, the linear model 
+# shows that the highest cateogry reached increases over time.
+
