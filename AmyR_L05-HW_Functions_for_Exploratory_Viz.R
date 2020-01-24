@@ -2,6 +2,9 @@
 # Lesson 5 - Creation Functions for Exploratory Data Analysis
 # Date: 12/08/2019
 
+# Set Working Directory --------------------------------------------------------
+setwd("C:/Users/arran/Dropbox/Data Analytics/Data Analysis Essentials/Data_Analysis_Essentials-HW_Output")
+
 # Load Packages ----------------------------------------------------------------
 library(stringr) # stringr
 library(tidyverse) # tidyverse
@@ -190,3 +193,16 @@ df_hurricane_summary %>% ggplot(mapping = aes(x = year, y = max_cat)) +
 # variable for the purpose of this analysis. Specifically, the linear model 
 # shows that the highest cateogry reached increases over time.
 
+# Analysis and Conclusions -----------------------------------------------------
+
+# Viewing the charts above, I observe that by at least two measures, hurricanes 
+# are becoming "worse" over time. Specifically, the charts show that the average
+# length (in days) of hurricanes has increased from 1975 to 2015. The average 
+# category reached - an indicator of wind speed and thus the strength of a 
+# hurricane - has increased as well.
+
+# Note that this analysis does not consider the average number of hurricanes 
+# per year, nor the same storms as they build up to hurricane status, or as 
+# they weaken from it. For instance, a single storm can be categorized as a 
+# tropical depression, tropical storm, and hurricane at different points in 
+# time, depending on its wind speed.
